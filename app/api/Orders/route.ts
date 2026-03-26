@@ -6,7 +6,7 @@ export async function POST(request: Request) {
         const client = await clientPromise;
         const db = client.db("tosty-sci");
         const collection = db.collection("orders");
-        const result = await collection.insertOne({name, amount, ingredients});
+        const result = await collection.insertOne({name, amount, ingredients, status: "pending"});
         return new Response(JSON.stringify(result), {status: 201});
     } catch (error) {
         console.error("Error inserting order:", error);

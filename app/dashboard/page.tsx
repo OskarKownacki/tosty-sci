@@ -1,22 +1,23 @@
 import { MongoClient } from "mongodb";
+import OrdersBoardWrapper from "@/components/OrdersBoardWrapper";
 
 export default async function Page() {
-    const client = new MongoClient(process.env.MONGODB_URI!);
-    await client.connect();
-    const orders = await client.db().collection("orders").find().toArray();
+  const client = new MongoClient(process.env.MONGODB_URI!);
+  await client.connect();
+  const orders = await client.db().collection("orders").find().toArray();
 
-    return (
-        <div className="px-24">
-            <h1 className="text-4xl font-bold">Zamówienia!</h1>
-            <div className="flex items-center justify-center h-screen">
-                {orders.map((order) => (
-                    <div key={order._id.toString()} className="p-4 border rounded mb-2">
-                        <h2 className="text-2xl font-semibold">{order.name}</h2>
-                        <p>Amount: {order.amount}</p>
-                        <p>Ingredients: {order.ingredients.join(", ")}</p>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
+  const serialized = orders.map((o) => ({
+    _id: o._id.toString(),
+    name: o.name,
+    amount: o.amount,
+    ingredients: o.ingredients,
+    status: o.status ?? "pending", // default to pending
+  }));
+
+  return (
+    <div className="flex flex-col flex-1">
+      <h1 className="text-4xl font-bold p-8 pb-0">Zamówienia!</h1>
+      <OrdersBoardWrapper initialOrders={serialized} />
+    </div>
+  );
 }

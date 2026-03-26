@@ -1,0 +1,22 @@
+import { NextRequest, NextResponse } from "next/server";
+
+export function middleware(request: NextRequest) {
+  // Only protect the /dashboard route
+  if (request.nextUrl.pathname.startsWith("/dashboard")) {
+    // Check if there's a session cookie (better-auth stores it as 'better-auth.session_token' or similar)
+    const sessionCookie = request.cookies.get("better-auth.session_token");
+
+    // If no session cookie, redirect to login
+    if (!sessionCookie) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    return NextResponse.next();
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/dashboard/:path*"],
+};
