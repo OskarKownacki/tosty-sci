@@ -16,7 +16,7 @@ export default async function Page() {
 
   return (
     <div className="flex flex-col flex-1">
-      <h1 className="text-4xl font-bold p-8 pb-0">Zamówienia!</h1>
+      <h1 className="text-4xl font-bold">Zamówienia!</h1>
       <OrdersBoardWrapper initialOrders={serialized} />
     </div>
   );

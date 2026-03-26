@@ -61,9 +61,9 @@ const selectedIngredients = ingredients
 }
 
   return (
-    <div className="flex flex-col flex-1 bg-background2">
-      <main className="p-8 flex flex-col">
-        <h1 className="text-4xl font-bold mb-4">Place your order!</h1>
+    <div className="flex flex-col flex-1 items-center">
+      <main className="p-8 flex flex-col bg-background2 w-1/2">
+        <h1 className="text-4xl font-bold mb-4">Zamów tosta!</h1>
         <hr className="mb-4" />
         <form className="flex flex-col gap-4" onSubmit={handleOrderSubmit}>
           <div className="relative">
@@ -115,7 +115,7 @@ const selectedIngredients = ingredients
             type="submit"
             className="px-4 py-2 bg-secondary text-foreground rounded hover:bg-primary-dark transition-colors"
           >
-            Place Order
+            Zamawiam!
           </button>
         </form>
       </main>

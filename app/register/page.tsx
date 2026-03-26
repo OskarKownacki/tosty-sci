@@ -63,8 +63,8 @@ export default function Page() {
   }
 
   return (
-    <div className="flex flex-col flex-1 bg-background2">
-      <main className="p-8 flex flex-col max-w-md mx-auto w-full">
+    <div className="flex flex-col flex-1">
+      <main className="p-8 flex flex-col max-w-md mx-auto w-1/2 bg-background2">
         <h1 className="text-4xl font-bold mb-4">Sign Up</h1>
         <hr className="mb-4" />
 

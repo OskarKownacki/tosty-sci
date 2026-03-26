@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Only protect the /dashboard route
   if (request.nextUrl.pathname.startsWith("/dashboard")) {
     // Check if there's a session cookie (better-auth stores it as 'better-auth.session_token' or similar)

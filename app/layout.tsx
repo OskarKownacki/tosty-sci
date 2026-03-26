@@ -38,18 +38,22 @@ export default async function RootLayout({
       lang="en"
       className={`h-full antialiased ${comicRelief.variable} ${playfairDisplay.variable}`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body className="min-h-full flex flex-col bg-background text-foreground px-24">
         <ThemeProvider>
-          <nav className="bg-background text-foreground px-24 py-4 flex flex-row items-center justify-between">
+          <nav className="bg-background text-foreground py-4 flex flex-row items-center justify-between">
             <Link href="/" className="text-2xl font-bold">
               TostySCI
             </Link>
             <div className="flex items-center gap-3">
               <ThemeSwitcher />
               {session ? (
-                <span className="inline-flex items-center leading-none text-2xl font-semibold bg-secondary text-background px-5 py-3 rounded-lg">
-                  {session.user.name}
-                </span>
+                <div className="flex flex-row gap-4 items-center">
+                  <Link href="/dashboard/ingredients" className="text-2xl">Składniki</Link>
+                  <span className="inline-flex items-center leading-none text-2xl font-semibold bg-secondary text-background px-5 py-3 rounded-lg">
+                    {session.user.name}
+                  </span>
+
+                </div>
               ) : (
                 <>
                   <Link href="/login" className="inline-flex items-center leading-none text-2xl font-semibold bg-secondary text-background px-5 py-3 rounded-lg">

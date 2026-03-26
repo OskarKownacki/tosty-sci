@@ -18,9 +18,9 @@ type Column = {
 };
 
 const COLUMNS: Column[] = [
-  { id: "pending", label: "Pending" },
-  { id: "done", label: "Done" },
-  { id: "granted", label: "Granted" },
+  { id: "pending", label: "Oczekujące" },
+  { id: "done", label: "Gotowe" },
+  { id: "granted", label: "Wydane" },
 ];
 
 function OrderCard({ order }: { order: Order }) {
@@ -41,8 +41,8 @@ function OrderCard({ order }: { order: Order }) {
       className={`p-4 border rounded-lg bg-background cursor-grab shadow-sm ${isDragging ? "opacity-50" : ""}`}
     >
       <h2 className="text-lg font-semibold">{order.name}</h2>
-      <p className="text-sm text-body">Amount: {order.amount}</p>
-      <p className="text-sm text-body">Ingredients: {order.ingredients.join(", ")}</p>
+      <p className="text-sm text-body">Ilość: {order.amount}</p>
+      <p className="text-sm text-body">Składniki: {order.ingredients.join(", ")}</p>
     </div>
   );
 }
@@ -53,7 +53,7 @@ function Column({ column, orders }: { column: Column; orders: Order[] }) {
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col gap-3 p-4 rounded-xl border-2 min-h-64 w-80 transition-colors ${
+      className={`flex flex-col gap-3 p-4 rounded-xl border-2 min-h-64 w-1/3 transition-colors ${
         isOver ? "border-brand bg-brand/10" : "border-default-medium bg-background2"
       }`}
     >
@@ -113,7 +113,7 @@ export default function OrdersBoard({ initialOrders }: { initialOrders: Order[] 
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
-      <div className="flex gap-6 p-8 overflow-x-auto justify-center">
+      <div className="flex gap-6 py-6 overflow-x-auto justify-between">
         {COLUMNS.map((column) => (
           <Column
             key={column.id}
