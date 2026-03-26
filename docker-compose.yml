@@ -1,7 +1,7 @@
 services:
   mongodb:
     image: mongo:8
-    container_name: bukowa-mongodb
+    container_name: tosty-sci-mongodb
     restart: unless-stopped
     ports:
       - "27017:27017"

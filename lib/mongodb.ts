@@ -9,7 +9,6 @@ let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
 
 if (process.env.NODE_ENV === 'development') {
-    // Reuse connection in dev to avoid exhausting connections on hot-reload
     if (!global._mongoClientPromise) {
         client = new MongoClient(uri);
         global._mongoClientPromise = client.connect();
