@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Link from "next/link";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { Comic_Relief, Playfair_Display } from "next/font/google";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const comicRelief = Comic_Relief({
   subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-comic-relief",
+  adjustFontFallback: false,
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
+  variable: "--font-playfair-display",
 });
 
 export const metadata: Metadata = {
@@ -25,9 +30,24 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`h-full antialiased ${comicRelief.variable} ${playfairDisplay.variable}`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-background text-foreground">
+        <ThemeProvider>
+          <nav className="bg-background text-foreground px-24 py-4 flex flex-row items-center justify-between">
+            <Link href="/" className="text-2xl font-bold">
+              TostySCI
+            </Link>
+            <div className="flex items-center gap-3">
+              <ThemeSwitcher />
+              <Link href="/login" className="inline-flex items-center leading-none text-2xl font-semibold bg-secondary text-background px-5 py-3 rounded-lg">
+                Login
+              </Link>
+            </div>
+          </nav>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

@@ -1,26 +1,41 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-background: #ffffff;
+  --color-foreground: #171717;
+  --font-family-main: "Arial", sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root[data-theme="wixapol"] {
+  --color-background: #ffff00;
+  --color-secondary: #cfcf18;
+  --color-background-dimmed: #afaf02;
+  --color-foreground: #171717;
+  --font-family-main: var(--font-comic-relief), "Comic Sans MS", "Comic Sans", "Chalkboard SE", cursive;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root[data-theme="dark"] {
+  --color-background: var(--color-indigo-800);
+  --color-background-dimmed: var(--color-indigo-700);
+  --color-foreground: #ededed;
+  --color-secondary: var(--color-indigo-600);
+  --font-family-main: "Arial", sans-serif;
+}
+
+:root[data-theme="hellokitty"] {
+  --color-background: var(--color-pink-100);
+  --color-foreground: #2c1810;
+  --color-secondary: var(--color-pink-300);
+  --color-background-dimmed: var(--color-pink-200);
+  --font-family-main: var(--font-playfair-display), "Playfair Display", "Times New Roman", serif;
+}
+@theme{
+  --color-secondary: var(--color-secondary);
+  --color-background2: var(--color-background-dimmed)
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-family-main);
 }
