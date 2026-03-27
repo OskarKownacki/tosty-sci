@@ -178,19 +178,23 @@ const selectedIngredients = ingredients
         <h1 className="mb-4 text-3xl font-bold sm:text-4xl">Zamów tosta!</h1>
         <hr className="mb-4" />
 
-        {userOrders.length > 0 && (
+        {name.trim() && (
           <div className="mb-4 rounded-base border border-default-medium bg-secondary/25 px-4 py-3 text-sm text-body">
             <p className="mb-2 font-medium">Status Twoich zamówień:</p>
-            <ul className="flex flex-col gap-1">
-              {userOrders.map((order) => (
-                <li key={order._id} className="flex items-center justify-between">
-                  <span aria-label="Nazwa zamówienia">{order.name}</span>
-                  <span className={statusClass(order.status)}>
-                    {statusLabel(order.status)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            {userOrders.length === 0 ? (
+              <p className="text-body opacity-75">Brak zamówień</p>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {userOrders.map((order) => (
+                  <li key={order._id} className="flex items-center justify-between">
+                    <span aria-label="Nazwa zamówienia">{order.name}</span>
+                    <span className={statusClass(order.status)}>
+                      {statusLabel(order.status)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
 

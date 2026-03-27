@@ -13,7 +13,32 @@ type Order = {
   grantedAt?: string | null;
 };
 
+type OrderFromApi = {
+  _id: string | { toString?: () => string };
+  name: string;
+  amount: number;
+  ingredients?: string[];
+  status?: "pending" | "done" | "granted";
+  grantedAt?: string | null;
+};
+
 const GRANTED_TTL_MS = 5 * 60 * 1000;
+const POLL_INTERVAL_MS = 45 * 1000;
+
+function normalizeOrder(o: OrderFromApi): Order {
+  const id =
+    typeof o._id === "string"
+      ? o._id
+      : (o._id as { toString?: () => string })?.toString?.() ?? String(o._id);
+  return {
+    _id: id,
+    name: o.name,
+    amount: o.amount,
+    ingredients: o.ingredients ?? [],
+    status: o.status ?? "pending",
+    grantedAt: o.grantedAt ? new Date(o.grantedAt).toISOString() : null,
+  };
+}
 
 type Column = {
   id: Order["status"];
@@ -74,6 +99,7 @@ function Column({ column, orders }: { column: Column; orders: Order[] }) {
 export default function OrdersBoard({ initialOrders }: { initialOrders: Order[] }) {
   const [orders, setOrders] = useState(initialOrders);
   const removalTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const isInteractingRef = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -82,7 +108,68 @@ export default function OrdersBoard({ initialOrders }: { initialOrders: Order[] 
     };
   }, []);
 
+  // Poll the server every 45 s, pausing during drag-and-drop interactions
+  useEffect(() => {
+    const pollOrders = async () => {
+      if (isInteractingRef.current) return;
+      try {
+        const res = await fetch("/api/Orders", { cache: "no-store" });
+        if (!res.ok) return;
+        const raw: OrderFromApi[] = await res.json();
+        const now = Date.now();
+
+        // Normalize and apply the same TTL filter used during the initial server render
+        const normalized = raw
+          .map(normalizeOrder)
+          .filter((o) => {
+            if (o.status !== "granted") return true;
+            if (!o.grantedAt) return true;
+            return now - new Date(o.grantedAt).getTime() < GRANTED_TTL_MS;
+          });
+
+        // Set removal timers for any newly-granted orders not already tracked
+        for (const order of normalized) {
+          if (order.status === "granted" && !removalTimersRef.current[order._id]) {
+            const grantedTime = order.grantedAt ? new Date(order.grantedAt).getTime() : now;
+            const remaining = Math.max(0, GRANTED_TTL_MS - (now - grantedTime));
+            const id = order._id;
+            removalTimersRef.current[id] = setTimeout(() => {
+              setOrders((prev) => prev.filter((o) => o._id !== id));
+              delete removalTimersRef.current[id];
+            }, remaining);
+          }
+        }
+
+        // Clear timers for orders that are no longer present in the snapshot
+        const snapshotIds = new Set(normalized.map((o) => o._id));
+        for (const id of Object.keys(removalTimersRef.current)) {
+          if (!snapshotIds.has(id)) {
+            clearTimeout(removalTimersRef.current[id]);
+            delete removalTimersRef.current[id];
+          }
+        }
+
+        setOrders(normalized);
+      } catch (err) {
+        console.error("Failed to poll orders:", err);
+      }
+    };
+
+    const interval = setInterval(pollOrders, POLL_INTERVAL_MS);
+    void pollOrders();
+    return () => clearInterval(interval);
+  }, []);
+
+  function handleDragStart() {
+    isInteractingRef.current = true;
+  }
+
+  function handleDragCancel() {
+    isInteractingRef.current = false;
+  }
+
   function handleDragEnd(event: DragEndEvent) {
+    isInteractingRef.current = false;
     const { active, over } = event;
     if (!over) return;
 
@@ -158,7 +245,7 @@ export default function OrdersBoard({ initialOrders }: { initialOrders: Order[] 
   }
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
       <div className="flex flex-col gap-4 py-4 md:flex-row md:gap-6 md:py-6">
         {COLUMNS.map((column) => (
           <Column
