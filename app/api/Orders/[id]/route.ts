@@ -10,9 +10,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         const db = client.db("tosty-sci");
         const collection = db.collection("orders");
         
+        const update =
+            status === "granted"
+                ? { $set: { status, grantedAt: new Date() } }
+                : { $set: { status }, $unset: { grantedAt: "" } };
+
         const result = await collection.updateOne(
             { _id: new ObjectId(id) },
-            { $set: { status } }
+            update,
         );
         
         if (result.matchedCount === 0) {

@@ -9,11 +9,28 @@ interface Ingredient {
   name: string;
 }
 
+interface Order {
+  _id: string;
+  name: string;
+  status?: "pending" | "done" | "granted";
+}
+
 type OrderErrors = Partial<Record<keyof z.infer<typeof orderSchema>, string>>;
+
+const SAVED_NAME_KEY = "tosty.customer.name";
+const NOTIFIED_READY_ORDERS_KEY = "tosty.orders.ready.notified";
 
 export default function Home() {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [errors, setErrors] = useState<OrderErrors>({});
+  const [readyBannerMessage, setReadyBannerMessage] = useState<string | null>(null);
+  const [name, setName] = useState(() => {
+    if (typeof window === "undefined") {
+      return "";
+    }
+
+    return localStorage.getItem(SAVED_NAME_KEY) ?? "";
+  });
 
   useEffect(() => {
     fetch("/api/Ingredients", { method: "GET" })
@@ -22,6 +39,83 @@ export default function Home() {
       .catch((err) => console.error(err));
   }, []);
 
+  useEffect(() => {
+    if (!name.trim()) {
+      return;
+    }
+
+    const normalizedName = name.trim().toLowerCase();
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch("/api/Orders", { method: "GET" });
+        if (!response.ok) {
+          return;
+        }
+
+        const orders: Order[] = await response.json();
+        const readyOrders = orders.filter(
+          (order) =>
+            order.status === "done" &&
+            order.name?.trim().toLowerCase() === normalizedName,
+        );
+
+        if (readyOrders.length === 0) {
+          return;
+        }
+
+        const canUseNotifications = "Notification" in window;
+        const notifiedIds = new Set<string>(
+          JSON.parse(localStorage.getItem(NOTIFIED_READY_ORDERS_KEY) ?? "[]"),
+        );
+        const fallbackReadyNames: string[] = [];
+
+        for (const order of readyOrders) {
+          const orderId = String(order._id);
+          if (notifiedIds.has(orderId)) {
+            continue;
+          }
+
+          let sentNotification = false;
+
+          if (canUseNotifications) {
+            if (Notification.permission === "default") {
+              await Notification.requestPermission();
+            }
+
+            if (Notification.permission === "granted") {
+              new Notification("Zamowienie gotowe", {
+                body: `Twoje zamowienie (${order.name}) jest gotowe do odbioru.`,
+              });
+              sentNotification = true;
+            }
+          }
+
+          if (!sentNotification) {
+            fallbackReadyNames.push(order.name);
+          }
+
+          notifiedIds.add(orderId);
+        }
+
+        if (fallbackReadyNames.length > 0) {
+          setReadyBannerMessage(
+            `Twoje zamowienie jest gotowe: ${fallbackReadyNames.join(", ")}`,
+          );
+        }
+
+        localStorage.setItem(
+          NOTIFIED_READY_ORDERS_KEY,
+          JSON.stringify(Array.from(notifiedIds)),
+        );
+      } catch (error) {
+        console.error("Error checking ready orders:", error);
+      }
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, [name]);
+
   function handleOrderSubmit(event: React.FormEvent<HTMLFormElement>) {
   event.preventDefault();
   setErrors({});
@@ -29,13 +123,13 @@ export default function Home() {
   const form = event.currentTarget; // grab reference immediately
 
   const formData = new FormData(form);
-  const name = formData.get("name") as string;
+  const submittedName = (formData.get("name") as string) ?? "";
   const amount = Number(formData.get("amount"));
 const selectedIngredients = ingredients
   .filter((ingredient) => formData.get(ingredient._id))
   .map((ingredient) => ingredient.name); // was ingredient._id
 
-  const result = orderSchema.safeParse({ name, amount, ingredients: selectedIngredients });
+  const result = orderSchema.safeParse({ name: submittedName, amount, ingredients: selectedIngredients });
 
   if (!result.success) {
     const fieldErrors: OrderErrors = {};
@@ -55,6 +149,9 @@ const selectedIngredients = ingredients
     .then((res) => res.json())
     .then((data) => {
       console.log("Order placed:", data);
+      const trimmedName = result.data.name.trim();
+      localStorage.setItem(SAVED_NAME_KEY, trimmedName);
+      setName(trimmedName);
       form.reset(); // use the saved reference instead
     })
     .catch((err) => console.error(err));
@@ -65,12 +162,28 @@ const selectedIngredients = ingredients
       <main className="flex w-full max-w-3xl flex-col bg-background2 p-4 sm:p-6 lg:p-8">
         <h1 className="mb-4 text-3xl font-bold sm:text-4xl">Zamów tosta!</h1>
         <hr className="mb-4" />
+
+        {readyBannerMessage ? (
+          <div className="mb-4 flex items-start justify-between gap-3 rounded-base border border-default-medium bg-secondary/25 px-4 py-3 text-sm text-body">
+            <p>{readyBannerMessage}</p>
+            <button
+              type="button"
+              onClick={() => setReadyBannerMessage(null)}
+              className="shrink-0 rounded border border-default-medium px-2 py-1 text-xs hover:bg-background"
+            >
+              Zamknij
+            </button>
+          </div>
+        ) : null}
+
         <form className="flex flex-col gap-4" onSubmit={handleOrderSubmit}>
           <div className="relative">
             <input
               type="text"
               id="name"
               name="name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
               className="block px-2.5 pb-2.5 pt-4 w-full text-sm text-heading bg-transparent rounded-base border border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer"
               placeholder=" "
             />

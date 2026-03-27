@@ -3,7 +3,30 @@ import OrdersBoardWrapper from "@/components/OrdersBoardWrapper";
 
 export default async function Page() {
   const client = await clientPromise;
-  const orders = await client.db("tosty-sci").collection("orders").find().toArray();
+  const orders = await client
+    .db("tosty-sci")
+    .collection("orders")
+    .find({
+      $or: [
+        { status: { $ne: "granted" } },
+        { status: "granted", grantedAt: { $exists: false } },
+        {
+          $expr: {
+            $gte: [
+              "$grantedAt",
+              {
+                $dateSubtract: {
+                  startDate: "$$NOW",
+                  unit: "minute",
+                  amount: 5,
+                },
+              },
+            ],
+          },
+        },
+      ],
+    })
+    .toArray();
 
   const serialized = orders.map((o) => ({
     _id: o._id.toString(),
@@ -11,6 +34,7 @@ export default async function Page() {
     amount: o.amount,
     ingredients: o.ingredients,
     status: o.status ?? "pending", // default to pending
+    grantedAt: o.grantedAt ? new Date(o.grantedAt).toISOString() : null,
   }));
 
   return (

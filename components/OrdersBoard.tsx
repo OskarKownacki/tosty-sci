@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DndContext, DragEndEvent, useDroppable } from "@dnd-kit/core";
 import { useDraggable } from "@dnd-kit/core";
 
@@ -10,7 +10,10 @@ type Order = {
   amount: number;
   ingredients: string[];
   status: "pending" | "done" | "granted";
+  grantedAt?: string | null;
 };
+
+const GRANTED_TTL_MS = 5 * 60 * 1000;
 
 type Column = {
   id: Order["status"];
@@ -70,6 +73,14 @@ function Column({ column, orders }: { column: Column; orders: Order[] }) {
 
 export default function OrdersBoard({ initialOrders }: { initialOrders: Order[] }) {
   const [orders, setOrders] = useState(initialOrders);
+  const removalTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  useEffect(() => {
+    return () => {
+      Object.values(removalTimersRef.current).forEach(clearTimeout);
+      removalTimersRef.current = {};
+    };
+  }, []);
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -84,10 +95,31 @@ export default function OrdersBoard({ initialOrders }: { initialOrders: Order[] 
     // Allow movement to any column
     if (order.status === newStatus) return; // no-op if same column
 
+    const existingTimer = removalTimersRef.current[orderId];
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+      delete removalTimersRef.current[orderId];
+    }
+
     // Update locally
     setOrders((prev) =>
-      prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o))
+      prev.map((o) =>
+        o._id === orderId
+          ? {
+              ...o,
+              status: newStatus,
+              grantedAt: newStatus === "granted" ? new Date().toISOString() : null,
+            }
+          : o,
+      )
     );
+
+    if (newStatus === "granted") {
+      removalTimersRef.current[orderId] = setTimeout(() => {
+        setOrders((prev) => prev.filter((o) => o._id !== orderId));
+        delete removalTimersRef.current[orderId];
+      }, GRANTED_TTL_MS);
+    }
 
     // Persist to API
     fetch(`/api/Orders/${orderId}`, {
@@ -106,8 +138,22 @@ export default function OrdersBoard({ initialOrders }: { initialOrders: Order[] 
         console.error("Failed to update order status:", err);
         // Revert local change on error
         setOrders((prev) =>
-          prev.map((o) => (o._id === orderId ? { ...o, status: order.status } : o))
+          prev.map((o) =>
+            o._id === orderId
+              ? {
+                  ...o,
+                  status: order.status,
+                  grantedAt: order.grantedAt ?? null,
+                }
+              : o,
+          )
         );
+
+        const timerToClear = removalTimersRef.current[orderId];
+        if (timerToClear) {
+          clearTimeout(timerToClear);
+          delete removalTimersRef.current[orderId];
+        }
       });
   }
 
