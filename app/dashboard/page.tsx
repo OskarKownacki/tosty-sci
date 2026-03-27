@@ -1,10 +1,9 @@
-import { MongoClient } from "mongodb";
+import clientPromise from "@/lib/mongodb";
 import OrdersBoardWrapper from "@/components/OrdersBoardWrapper";
 
 export default async function Page() {
-  const client = new MongoClient(process.env.MONGODB_URI!);
-  await client.connect();
-  const orders = await client.db().collection("orders").find().toArray();
+  const client = await clientPromise;
+  const orders = await client.db("tosty-sci").collection("orders").find().toArray();
 
   const serialized = orders.map((o) => ({
     _id: o._id.toString(),
