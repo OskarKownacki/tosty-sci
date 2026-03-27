@@ -7,6 +7,7 @@ await client.connect(); // make sure connection is established
 const db = client.db();
 
 export const auth = betterAuth({
+    baseURL: process.env.BETTER_AUTH_URL,
     emailAndPassword: {
         enabled: true,
     },
