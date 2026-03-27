@@ -3,11 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 export function proxy(request: NextRequest) {
   // Only protect the /dashboard route
   if (request.nextUrl.pathname.startsWith("/dashboard")) {
-    // Check if there's a session cookie (better-auth stores it as 'better-auth.session_token' or similar)
-    const sessionCookie = request.cookies.get("better-auth.session_token");
+    // Check for session cookie - better-auth uses various cookie names
+    const sessionToken = 
+      request.cookies.get("better-auth.session_token")?.value ||
+      request.cookies.get("better-auth")?.value ||
+      request.cookies.get("__Secure-auth.session")?.value;
 
-    // If no session cookie, redirect to login
-    if (!sessionCookie) {
+    // If no session token found, redirect to login
+    if (!sessionToken) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
 
