@@ -1,10 +1,16 @@
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { verifyApiAccess } from "@/lib/api-access";
 
 export async function DELETE(
-    _request: Request,
+    request: Request,
     { params }: { params: Promise<{ id: string }> },
 ) {
+    const accessError = verifyApiAccess(request);
+    if (accessError) {
+        return accessError;
+    }
+
     try {
         const { id } = await params;
         const client = await clientPromise;

@@ -1,6 +1,12 @@
 import clientPromise from "@/lib/mongodb";
+import { verifyApiAccess } from "@/lib/api-access";
 
 export async function POST(request: Request) {
+    const accessError = verifyApiAccess(request);
+    if (accessError) {
+        return accessError;
+    }
+
     try {
         const {name, amount, ingredients} = await request.json();
         const client = await clientPromise;
@@ -14,7 +20,12 @@ export async function POST(request: Request) {
     }
 }
 
-export async function GET(){
+export async function GET(request: Request){
+    const accessError = verifyApiAccess(request);
+    if (accessError) {
+        return accessError;
+    }
+
     try {
         const client = await clientPromise;
         const db = client.db("tosty-sci");
