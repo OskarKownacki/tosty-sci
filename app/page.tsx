@@ -61,9 +61,9 @@ const selectedIngredients = ingredients
 }
 
   return (
-    <div className="flex flex-col flex-1 items-center">
-      <main className="p-8 flex flex-col bg-background2 w-1/2">
-        <h1 className="text-4xl font-bold mb-4">Zamów tosta!</h1>
+    <div className="flex w-full flex-col items-center pb-6 pt-2 sm:pb-10 sm:pt-4">
+      <main className="flex w-full max-w-3xl flex-col bg-background2 p-4 sm:p-6 lg:p-8">
+        <h1 className="mb-4 text-3xl font-bold sm:text-4xl">Zamów tosta!</h1>
         <hr className="mb-4" />
         <form className="flex flex-col gap-4" onSubmit={handleOrderSubmit}>
           <div className="relative">
@@ -71,10 +71,10 @@ const selectedIngredients = ingredients
               type="text"
               id="name"
               name="name"
-              className="block px-2.5 pb-2.5 pt-4 w-full text-sm text-heading bg-transparent rounded-base border-1 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer"
+              className="block px-2.5 pb-2.5 pt-4 w-full text-sm text-heading bg-transparent rounded-base border border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer"
               placeholder=" "
             />
-            <label htmlFor="name" className="absolute text-sm text-body duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-background2 px-2 peer-focus:px-2 peer-focus:text-fg-brand peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
+            <label htmlFor="name" className="absolute text-sm text-body duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-left bg-background2 px-2 peer-focus:px-2 peer-focus:text-fg-brand peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto inset-s-1">
               Imię i nazwisko
             </label>
             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
@@ -85,10 +85,10 @@ const selectedIngredients = ingredients
               type="number"
               id="amount"
               name="amount"
-              className="block px-2.5 pb-2.5 pt-4 w-full text-sm text-heading bg-transparent rounded-base border-1 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer"
+              className="block px-2.5 pb-2.5 pt-4 w-full text-sm text-heading bg-transparent rounded-base border border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer"
               placeholder=" "
             />
-            <label htmlFor="amount" className="absolute text-sm text-body duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-background2 px-2 peer-focus:px-2 peer-focus:text-fg-brand peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
+            <label htmlFor="amount" className="absolute text-sm text-body duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-left bg-background2 px-2 peer-focus:px-2 peer-focus:text-fg-brand peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto inset-s-1">
               Ilość
             </label>
             {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount}</p>}

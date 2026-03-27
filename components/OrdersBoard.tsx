@@ -53,11 +53,11 @@ function Column({ column, orders }: { column: Column; orders: Order[] }) {
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col gap-3 p-4 rounded-xl border-2 min-h-64 w-1/3 transition-colors ${
+      className={`flex min-h-64 w-full flex-col gap-3 rounded-xl border-2 p-4 transition-colors md:flex-1 ${
         isOver ? "border-brand bg-brand/10" : "border-default-medium bg-background2"
       }`}
     >
-      <h2 className="text-xl font-bold mb-2">{column.label}</h2>
+      <h2 className="mb-2 text-lg font-bold sm:text-xl">{column.label}</h2>
       {orders.map((order) => (
         <OrderCard key={order._id} order={order} />
       ))}
@@ -113,7 +113,7 @@ export default function OrdersBoard({ initialOrders }: { initialOrders: Order[] 
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
-      <div className="flex gap-6 py-6 overflow-x-auto justify-between">
+      <div className="flex flex-col gap-4 py-4 md:flex-row md:gap-6 md:py-6">
         {COLUMNS.map((column) => (
           <Column
             key={column.id}

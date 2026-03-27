@@ -38,28 +38,28 @@ export default async function RootLayout({
       lang="en"
       className={`h-full antialiased ${comicRelief.variable} ${playfairDisplay.variable}`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground px-24">
+      <body className="min-h-full bg-background px-4 text-foreground sm:px-6 lg:px-10 xl:px-16">
         <ThemeProvider>
-          <nav className="bg-background text-foreground py-4 flex flex-row items-center justify-between">
-            <Link href="/" className="text-2xl font-bold">
+          <nav className="flex flex-wrap items-center justify-between gap-3 bg-background py-4 text-foreground">
+            <Link href="/" className="text-xl font-bold sm:text-2xl">
               TostySCI
             </Link>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
               <ThemeSwitcher />
               {session ? (
-                <div className="flex flex-row gap-4 items-center">
-                  <Link href="/dashboard/ingredients" className="text-2xl">Składniki</Link>
-                  <span className="inline-flex items-center leading-none text-2xl font-semibold bg-secondary text-background px-5 py-3 rounded-lg">
+                <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-4">
+                  <Link href="/dashboard/ingredients" className="text-base font-semibold sm:text-lg">Składniki</Link>
+                  <span className="inline-flex items-center rounded-lg bg-secondary px-3 py-2 text-sm font-semibold leading-none text-background sm:px-4 sm:py-2.5 sm:text-base">
                     {session.user.name}
                   </span>
 
                 </div>
               ) : (
                 <>
-                  <Link href="/login" className="inline-flex items-center leading-none text-2xl font-semibold bg-secondary text-background px-5 py-3 rounded-lg">
+                  <Link href="/login" className="inline-flex items-center rounded-lg bg-secondary px-3 py-2 text-sm font-semibold leading-none text-background sm:px-4 sm:py-2.5 sm:text-base">
                     Login
                   </Link>
-                  <Link href="/register" className="inline-flex items-center leading-none text-2xl font-semibold bg-secondary text-background px-5 py-3 rounded-lg">
+                  <Link href="/register" className="inline-flex items-center rounded-lg bg-secondary px-3 py-2 text-sm font-semibold leading-none text-background sm:px-4 sm:py-2.5 sm:text-base">
                     Register
                   </Link>
                 </>

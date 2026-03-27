@@ -31,15 +31,15 @@ export default function IngredientsList({ initialIngredients }: { initialIngredi
     };
 
     return (
-        <ul className="list-disc pl-6">
+        <ul className="list-disc space-y-1 pl-5 sm:pl-6">
             {ingredients.map((ingredient) => (
-                <li key={ingredient._id} className="flex items-center gap-2">
-                    <span>{ingredient.name}</span>
+                <li key={ingredient._id} className="flex items-start gap-2">
+                    <span className="wrap-break-word pr-1 text-sm sm:text-base">{ingredient.name}</span>
                     <button
                         type="button"
                         onClick={handleIngredientRemove(ingredient._id)}
                         aria-label={`Remove ${ingredient.name}`}
-                        className="rounded border border-default-medium p-1 hover:bg-background2"
+                        className="rounded border border-default-medium p-1.5 hover:bg-background2"
                     >
                         <XIcon size={14} />
                     </button>

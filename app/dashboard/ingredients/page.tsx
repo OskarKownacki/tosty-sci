@@ -23,12 +23,12 @@ export default async function Page() {
     }));
 
     return (
-        <div className="flex flex-col gap-4">
-            <h1 className="text-3xl font-bold">Składniki</h1>
-            <h2 className="text-2xl font-semibold">Lista składników</h2>
+        <div className="flex w-full max-w-3xl flex-col gap-4 pb-6 pt-2 sm:pb-10 sm:pt-4">
+            <h1 className="text-3xl font-bold sm:text-4xl">Składniki</h1>
+            <h2 className="text-xl font-semibold sm:text-2xl">Lista składników</h2>
             <IngredientsList initialIngredients={serializedIngredients} />
-            <h2 className="text-2xl font-semibold">Dodaj składnik</h2>
-                        <AddIngredientForm />
+            <h2 className="text-xl font-semibold sm:text-2xl">Dodaj składnik</h2>
+            <AddIngredientForm />
         </div>
     );
 }
