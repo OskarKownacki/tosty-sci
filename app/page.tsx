@@ -20,10 +20,34 @@ type OrderErrors = Partial<Record<keyof z.infer<typeof orderSchema>, string>>;
 const SAVED_NAME_KEY = "tosty.customer.name";
 const NOTIFIED_READY_ORDERS_KEY = "tosty.orders.ready.notified";
 
+function statusLabel(status: Order["status"] | undefined): string {
+  switch (status) {
+    case "pending":
+      return "Oczekuje na przygotowanie";
+    case "done":
+      return "Gotowe do odbioru!";
+    case "granted":
+      return "Odebrane";
+    default:
+      return status ?? "Nieznany";
+  }
+}
+
+function statusClass(status: Order["status"] | undefined): string {
+  switch (status) {
+    case "done":
+      return "text-green-600 font-medium";
+    case "granted":
+      return "text-gray-500";
+    default:
+      return "text-yellow-600";
+  }
+}
+
 export default function Home() {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [errors, setErrors] = useState<OrderErrors>({});
-  const [readyBannerMessage, setReadyBannerMessage] = useState<string | null>(null);
+  const [userOrders, setUserOrders] = useState<Order[]>([]);
   const [name, setName] = useState(() => {
     if (typeof window === "undefined") {
       return "";
@@ -41,12 +65,13 @@ export default function Home() {
 
   useEffect(() => {
     if (!name.trim()) {
+      setUserOrders([]);
       return;
     }
 
     const normalizedName = name.trim().toLowerCase();
 
-    const interval = setInterval(async () => {
+    const fetchOrders = async () => {
       try {
         const response = await fetch("/api/Orders", { method: "GET" });
         if (!response.ok) {
@@ -54,29 +79,27 @@ export default function Home() {
         }
 
         const orders: Order[] = await response.json();
-        const readyOrders = orders.filter(
-          (order) =>
-            order.status === "done" &&
-            order.name?.trim().toLowerCase() === normalizedName,
+        const matchingOrders = orders.filter(
+          (order) => order.name?.trim().toLowerCase() === normalizedName,
         );
 
-        if (readyOrders.length === 0) {
-          return;
-        }
+        setUserOrders(matchingOrders);
 
+        // Send browser notifications for newly-ready orders (optional enhancement)
         const canUseNotifications = "Notification" in window;
         const notifiedIds = new Set<string>(
           JSON.parse(localStorage.getItem(NOTIFIED_READY_ORDERS_KEY) ?? "[]"),
         );
-        const fallbackReadyNames: string[] = [];
 
-        for (const order of readyOrders) {
+        for (const order of matchingOrders) {
+          if (order.status !== "done") {
+            continue;
+          }
+
           const orderId = String(order._id);
           if (notifiedIds.has(orderId)) {
             continue;
           }
-
-          let sentNotification = false;
 
           if (canUseNotifications) {
             if (Notification.permission === "default") {
@@ -87,21 +110,10 @@ export default function Home() {
               new Notification("Zamowienie gotowe", {
                 body: `Twoje zamowienie (${order.name}) jest gotowe do odbioru.`,
               });
-              sentNotification = true;
             }
           }
 
-          if (!sentNotification) {
-            fallbackReadyNames.push(order.name);
-          }
-
           notifiedIds.add(orderId);
-        }
-
-        if (fallbackReadyNames.length > 0) {
-          setReadyBannerMessage(
-            `Twoje zamowienie jest gotowe: ${fallbackReadyNames.join(", ")}`,
-          );
         }
 
         localStorage.setItem(
@@ -109,9 +121,12 @@ export default function Home() {
           JSON.stringify(Array.from(notifiedIds)),
         );
       } catch (error) {
-        console.error("Error checking ready orders:", error);
+        console.error("Error checking orders:", error);
       }
-    }, 15000);
+    };
+
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 15000);
 
     return () => clearInterval(interval);
   }, [name]);
@@ -163,18 +178,21 @@ const selectedIngredients = ingredients
         <h1 className="mb-4 text-3xl font-bold sm:text-4xl">Zamów tosta!</h1>
         <hr className="mb-4" />
 
-        {readyBannerMessage ? (
-          <div className="mb-4 flex items-start justify-between gap-3 rounded-base border border-default-medium bg-secondary/25 px-4 py-3 text-sm text-body">
-            <p>{readyBannerMessage}</p>
-            <button
-              type="button"
-              onClick={() => setReadyBannerMessage(null)}
-              className="shrink-0 rounded border border-default-medium px-2 py-1 text-xs hover:bg-background"
-            >
-              Zamknij
-            </button>
+        {userOrders.length > 0 && (
+          <div className="mb-4 rounded-base border border-default-medium bg-secondary/25 px-4 py-3 text-sm text-body">
+            <p className="mb-2 font-medium">Status Twoich zamówień:</p>
+            <ul className="flex flex-col gap-1">
+              {userOrders.map((order) => (
+                <li key={order._id} className="flex items-center justify-between">
+                  <span aria-label="Nazwa zamówienia">{order.name}</span>
+                  <span className={statusClass(order.status)}>
+                    {statusLabel(order.status)}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
-        ) : null}
+        )}
 
         <form className="flex flex-col gap-4" onSubmit={handleOrderSubmit}>
           <div className="relative">
